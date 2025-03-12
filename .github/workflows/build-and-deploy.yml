@@ -11,7 +11,7 @@ on:
       - '.github/workflows/build-and-deploy.yml'
 
 env:
-  VERSION_DOTNET: '9.0.3'
+  VERSION_DOTNET: '9'
   AZURE_APP_SERVICE_NOMBRE: BibliotecaAPI20250311201158
   AZURE_APP_SERVICE_UBICACION_PAQUETE: '.'
 
