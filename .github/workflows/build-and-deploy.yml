@@ -11,7 +11,7 @@ on:
       - '.github/workflows/build-and-deploy.yml'
 
 env:
-  VERSION_DOTNET: '9'
+  VERSION_DOTNET: '9.0.3'
   AZURE_APP_SERVICE_NOMBRE: BibliotecaAPI20250311201158
   AZURE_APP_SERVICE_UBICACION_PAQUETE: '.'
 
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Instalar .NET
-        uses: actions/setup-dotnet@v4.3.0
+        uses: actions/setup-dotnet@v3.3.1
         with:
           dotnet-version: ${{ env.VERSION_DOTNET }}
 
