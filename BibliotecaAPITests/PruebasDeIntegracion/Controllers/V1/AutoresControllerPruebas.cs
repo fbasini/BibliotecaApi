@@ -121,7 +121,7 @@ namespace BibliotecaAPITests.PruebasDeIntegracion.Controllers.V1
             var autorCreacionDTO = new AutorCreacionDTO
             {
                 Nombres = "Felipe",
-                Apellidos = "Gavilán",
+                Apellidos = "Perez",
                 Identificacion = "123"
             };
 
