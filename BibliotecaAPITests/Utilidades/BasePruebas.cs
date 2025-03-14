@@ -5,6 +5,7 @@ using BibliotecaAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -59,6 +60,15 @@ namespace BibliotecaAPITests.Utilidades
                     if (descriptorDBContext is not null)
                     {
                         services.Remove(descriptorDBContext);
+                    }
+
+                    ServiceDescriptor descriptorOutputCache = services.SingleOrDefault(
+                        d => d.ServiceType == typeof(IOutputCacheStore))!;
+
+                    if (descriptorOutputCache is not null)
+                    {
+                        services.Remove(descriptorOutputCache);
+                        services.AddOutputCache();
                     }
 
                     services.AddDbContext<ApplicationDbContext>(options =>
