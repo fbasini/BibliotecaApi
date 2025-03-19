@@ -16,15 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // servicios
 
-//builder.Services.AddOutputCache(opciones =>
-//{
-//    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
-//});
-
-builder.Services.AddStackExchangeRedisOutputCache(opciones =>
+builder.Services.AddOutputCache(opciones =>
 {
-    opciones.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
 });
+
+//builder.Services.AddStackExchangeRedisOutputCache(opciones =>
+//{
+//    opciones.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+//});
 
 builder.Services.AddDataProtection();
 

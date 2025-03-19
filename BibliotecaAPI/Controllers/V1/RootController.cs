@@ -46,7 +46,6 @@ namespace BibliotecaAPI.Controllers.V1
 
                 datosHATEOAS.Add(new DatosHATEOASDTO(Enlace: Url.Link("RenovarTokenV1", new { })!,
                     Descripcion: "token-renovar", Metodo: "GET"));
-
             }
 
             if (esAdmin.Succeeded)

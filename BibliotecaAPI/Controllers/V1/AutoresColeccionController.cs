@@ -23,6 +23,7 @@ namespace BibliotecaAPI.Controllers.V1
         }
 
         [HttpGet("{ids}", Name = "ObtenerAutoresPorIdsV1")] // api/autores-coleccion/1,2,3
+        [EndpointSummary("Obtiene una colección de autores")]
         public async Task<ActionResult<List<AutorConLibrosDTO>>> Get(string ids)
         {
             var idsColeccion = new List<int>();
@@ -57,6 +58,7 @@ namespace BibliotecaAPI.Controllers.V1
         }
 
         [HttpPost(Name = "CrearAutoresV1")]
+        [EndpointSummary("Crea una colección de autores")]
         public async Task<ActionResult> Post(IEnumerable<AutorCreacionDTO> autoresCreacionDTO)
         {
             var autores = mapper.Map<IEnumerable<Autor>>(autoresCreacionDTO);
