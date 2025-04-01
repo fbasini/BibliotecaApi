@@ -5,7 +5,7 @@ namespace BibliotecaAPI.Utilities
 {
     public static class ModelStateDictionaryExtensions
     {
-        public static BadRequestObjectResult ConstruirProblemDetail(this ModelStateDictionary modelState)
+        public static BadRequestObjectResult BuildProblemDetail(this ModelStateDictionary modelState)
         {
             var problemDetails = new ValidationProblemDetails(modelState)
             {

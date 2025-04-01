@@ -5,22 +5,22 @@ namespace BibliotecaAPI.Utilities
 {
     public class HATEOASFilterAttribute : ResultFilterAttribute
     {
-        protected bool DebeIncluirHATEOAS(ResultExecutingContext context)
+        protected bool ShouldIncludeHATEOAS(ResultExecutingContext context)
         {
-            if (context.Result is not ObjectResult result || !EsRespuestaExitosa(result))
+            if (context.Result is not ObjectResult result || !IsSuccessfulResponse(result))
             {
                 return false;
             }
 
-            if (!context.HttpContext.Request.Headers.TryGetValue("IncluirHATEOAS", out var cabecera))
+            if (!context.HttpContext.Request.Headers.TryGetValue("IncludeHATEOAS", out var header))
             {
                 return false;
             }
 
-            return string.Equals(cabecera, "Y", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(header, "Y", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool EsRespuestaExitosa(ObjectResult result)
+        private bool IsSuccessfulResponse(ObjectResult result)
         {
             if (result.Value is null)
             {

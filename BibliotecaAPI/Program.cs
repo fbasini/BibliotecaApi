@@ -9,7 +9,6 @@ using BibliotecaAPI.Data;
 using BibliotecaAPI.Services;
 using BibliotecaAPI.Utilities;
 using BibliotecaAPI.Swagger;
-using BibliotecaAPI.Utilities.V1;
 using BibliotecaAPI.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,16 +27,16 @@ builder.Services.AddOutputCache(opciones =>
 
 builder.Services.AddDataProtection();
 
-var origenesPermitidos = builder.Configuration.GetSection("origenesPermitidos").Get<string[]>()!;
+var allowedOrigins = builder.Configuration.GetSection("allowedOrigins").Get<string[]>()!;
 
-builder.Services.AddCors(opciones =>
+builder.Services.AddCors(options =>
 {
-    opciones.AddDefaultPolicy(opcionesCORS =>
+    options.AddDefaultPolicy(corsOptions =>
     {
-        opcionesCORS.AllowAnyOrigin()
+        corsOptions.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .WithExposedHeaders("cantidad-total-registros");
+            .WithExposedHeaders("total-records-count");
         //opcionesCORS.WithOrigins(origenesPermitidos)
         //    .AllowAnyMethod()
         //    .AllowAnyHeader()
@@ -47,90 +46,69 @@ builder.Services.AddCors(opciones =>
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddControllers(opciones =>
+builder.Services.AddControllers(options =>
 {
-    opciones.Conventions.Add(new ConvencionAgrupaPorVersion());
+    //options.Conventions.Add(new GroupByVersionConvention());
 }).AddNewtonsoftJson();
 
-builder.Services.AddDbContext<ApplicationDbContext>(opciones =>
-    opciones.UseSqlServer("name=DefaultConnection"));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer("name=DefaultConnection"));
 
-builder.Services.AddIdentityCore<Usuario>()
+builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<UserManager<Usuario>>();
-builder.Services.AddScoped<SignInManager<Usuario>>();
-builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
-builder.Services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosAzure>();
+builder.Services.AddScoped<UserManager<User>>();
+builder.Services.AddScoped<SignInManager<User>>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
 //builder.Services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
-builder.Services.AddScoped<FiltroValidacionLibro>();
-builder.Services.AddScoped<BibliotecaAPI.Services.V1.IServicioAutores,
-            BibliotecaAPI.Services.V1.ServicioAutores>();
+builder.Services.AddScoped<BookValidationFilter>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
 
-builder.Services.AddScoped<BibliotecaAPI.Services.V1.IGeneradorEnlaces, BibliotecaAPI.Services.V1.GeneradorEnlaces>();
+builder.Services.AddScoped<ILinkGenerator, BibliotecaAPI.Services.LinkGenerator>();
 
-builder.Services.AddScoped<HATEOASAutorAttribute>();
-builder.Services.AddScoped<HATEOASAutoresAttribute>();
+builder.Services.AddScoped<HATEOASAuthorAttribute>();
+builder.Services.AddScoped<HATEOASAuthorsAttribute>();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddAuthentication().AddJwtBearer(opciones =>
+builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
-    opciones.MapInboundClaims = false;
+    options.MapInboundClaims = false;
 
-    opciones.TokenValidationParameters = new TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["llavejwt"]!)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwtkey"]!)),
         ClockSkew = TimeSpan.Zero
     };
 });
 
-builder.Services.AddAuthorization(opciones =>
+builder.Services.AddAuthorization(options =>
 {
-    opciones.AddPolicy("esadmin", politica => politica.RequireClaim("esadmin"));
+    options.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
 });
 
 //builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(opciones =>
+builder.Services.AddSwaggerGen(options =>
 {
-    opciones.SwaggerDoc("v1", new OpenApiInfo { 
+    options.SwaggerDoc("biblioteca", new OpenApiInfo { 
         Title = "Biblioteca API", 
-        Version = "v1",
-        Description = "Este es un web api para trabajar con autores y libros",
+        //Version = "v1",
+        //Description = "Este es un web api para trabajar con autores y libros",
         Contact = new OpenApiContact
         {
             Name = "Felipe Basini",
-            Email = "felipe@hotmail.com"
-        },
-        License = new OpenApiLicense
-        {
-            Name = "MIT",
+            Email = "felipebasini97@gmail.com"
         },
     });
 
-    opciones.SwaggerDoc("v2", new OpenApiInfo
-    {
-        Title = "Biblioteca API",
-        Version = "v2",
-        Description = "Este es un web api para trabajar con autores y libros",
-        Contact = new OpenApiContact
-        {
-            Name = "Felipe Basini",
-            Email = "felipe@hotmail.com"
-        },
-        License = new OpenApiLicense
-        {
-            Name = "MIT",
-        },
-    });
-
-    opciones.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
@@ -139,7 +117,7 @@ builder.Services.AddSwaggerGen(opciones =>
         In = ParameterLocation.Header
     });
 
-    opciones.OperationFilter<FiltroAutorizacion>();
+    options.OperationFilter<AuthorizationFilter>();
 });
 
 var app = builder.Build();
@@ -158,13 +136,13 @@ using (var scope = app.Services.CreateScope())
 app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
 {
     var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
-    var excepcion = exceptionHandlerFeature?.Error!;
+    var exception = exceptionHandlerFeature?.Error!;
 
     var error = new Error()
     {
-        MensajeDeError = excepcion.Message,
-        StrackTrace = excepcion.StackTrace,
-        Fecha = DateTime.UtcNow
+        ErrorMessage = exception.Message,
+        StrackTrace = exception.StackTrace,
+        Date = DateTime.UtcNow
     };
 
     var dbContext = context.RequestServices.GetRequiredService<ApplicationDbContext>();
@@ -172,17 +150,16 @@ app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async con
     await dbContext.SaveChangesAsync();
     await Results.InternalServerError(new
     {
-        tipo = "error",
-        mensaje = "Ha ocurrido un error inesperado",
-        estatus = 500
+        type = "error",
+        message = "An unexpected error occurred",
+        status = 500
     }).ExecuteAsync(context);
 }));
 
 app.UseSwagger();
 app.UseSwaggerUI(opciones =>
 {
-    opciones.SwaggerEndpoint("/swagger/v1/swagger.json", "Biblioteca API v1");
-    opciones.SwaggerEndpoint("/swagger/v2/swagger.json", "Biblioteca API v2");
+    opciones.SwaggerEndpoint("/swagger/biblioteca/swagger.json", "Biblioteca API");
 });
 
 app.UseStaticFiles();

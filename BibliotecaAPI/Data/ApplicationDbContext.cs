@@ -4,7 +4,7 @@ using BibliotecaAPI.Entities;
 
 namespace BibliotecaAPI.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<Usuario>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
@@ -14,13 +14,13 @@ namespace BibliotecaAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Comentario>().HasQueryFilter(b => !b.EstaBorrado);
+            modelBuilder.Entity<Comment>().HasQueryFilter(b => !b.IsDeleted);
         }
 
-        public DbSet<Autor> Autores { get; set; }
-        public DbSet<Libro> Libros { get; set; }
-        public DbSet<Comentario> Comentarios { get; set; }
-        public DbSet<AutorLibro> AutoresLibros { get; set; }
-        public DbSet<Error> Errores { get; set; }
+        public DbSet<Author> Authors { get; set; }
+        public DbSet<Book> Books { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<AuthorBook> AuthorsBooks { get; set; }
+        public DbSet<Error> Errors { get; set; }
     }
 }
