@@ -12,6 +12,11 @@ namespace BibliotecaAPI.Validations
             }
 
             var valueString = value.ToString();
+            if (string.IsNullOrEmpty(valueString))
+            {
+                return ValidationResult.Success;
+            }
+
             var firstLetter = valueString[0].ToString();
 
             if (firstLetter != firstLetter.ToUpper())
