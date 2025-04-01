@@ -67,8 +67,8 @@ namespace BibliotecaAPITests.IntegrationTesting.Controllers
             var client = factory.CreateClient();
             var createAuthorDTO = new CreateAuthorDTO
             {
-                FirstNames = "Felipe",
-                LastNames = "Perez",
+                FirstName = "Felipe",
+                LastName = "Perez",
                 Identification = "123"
             };
 
@@ -93,8 +93,8 @@ namespace BibliotecaAPITests.IntegrationTesting.Controllers
 
             var createAuthorDTO = new CreateAuthorDTO
             {
-                FirstNames = "Felipe",
-                LastNames = "Perez",
+                FirstName = "Felipe",
+                LastName = "Perez",
                 Identification = "123"
             };
 
@@ -120,8 +120,8 @@ namespace BibliotecaAPITests.IntegrationTesting.Controllers
 
             var createAuthorDTO = new CreateAuthorDTO
             {
-                FirstNames = "Felipe",
-                LastNames = "Perez",
+                FirstName = "Felipe",
+                LastName = "Perez",
                 Identification = "123"
             };
 

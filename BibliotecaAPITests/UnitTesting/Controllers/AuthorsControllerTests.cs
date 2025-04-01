@@ -125,7 +125,7 @@ namespace BibliotecaAPITests.UnitTesting.Controllers
         {
             // Arrange
             var context = BuildContext(nameDB);
-            var newAuthor = new CreateAuthorDTO { FirstNames = "new", LastNames = "author" };
+            var newAuthor = new CreateAuthorDTO { FirstName = "new", LastName = "author" };
 
             // Act
             var response = await controller.Post(newAuthor);
@@ -170,8 +170,8 @@ namespace BibliotecaAPITests.UnitTesting.Controllers
 
             var createAuthorDTO = new CreateAuthorWithPhotoDTO
             {
-                FirstNames = "Felipe2",
-                LastNames = "Perez2",
+                FirstName = "Felipe2",
+                LastName = "Perez2",
                 Identification = "Id2"
             };
 
@@ -216,8 +216,8 @@ namespace BibliotecaAPITests.UnitTesting.Controllers
 
             var createAuthorDTO = new CreateAuthorWithPhotoDTO
             {
-                FirstNames = "Felipe2",
-                LastNames = "Perez2",
+                FirstName = "Felipe2",
+                LastName = "Perez2",
                 Identification = "Id2",
                 Photo = formFile
             };
@@ -318,7 +318,7 @@ namespace BibliotecaAPITests.UnitTesting.Controllers
             controller.ObjectValidator = objectValidator;
 
             var patchDoc = new JsonPatchDocument<AuthorPatchDTO>();
-            patchDoc.Operations.Add(new Operation<AuthorPatchDTO>("replace", "/FirstNames", null, "Felipe2"));
+            patchDoc.Operations.Add(new Operation<AuthorPatchDTO>("replace", "/FirstName", null, "Felipe2"));
 
             // Act
             var response = await controller.Patch(1, patchDoc);
