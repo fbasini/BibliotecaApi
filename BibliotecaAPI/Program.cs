@@ -99,17 +99,23 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("biblioteca", new OpenApiInfo { 
         Title = "Biblioteca API", 
-        //Version = "v1",
-        //Description = "Este es un web api para trabajar con autores y libros",
+        Version = "v1",
+        Description = "This web API provides functionality for managing authors and books in a library system",
         Contact = new OpenApiContact
         {
             Name = "Felipe Basini",
             Email = "felipebasini97@gmail.com"
         },
+        License = new OpenApiLicense()
+        {
+            Name = "MIT License",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer",
@@ -118,6 +124,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.OperationFilter<AuthorizationFilter>();
+    options.EnableAnnotations();
 });
 
 var app = builder.Build();

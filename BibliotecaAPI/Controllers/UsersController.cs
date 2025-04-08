@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -41,6 +42,8 @@ namespace BibliotecaAPI.Controllers
         [HttpGet(Name = "GetUsers")]
         [Authorize(Policy = "isadmin")]
         [EndpointSummary("Retrieves all users")]
+        [SwaggerResponse(200, "List of users retrieved successfully.", typeof(IEnumerable<UserDTO>))]
+        [SwaggerResponse(403, "Access denied. Admin role required.")]
         public async Task<IEnumerable<UserDTO>> Get()
         {
             var users = await context.Users.ToListAsync();
@@ -50,6 +53,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost("register", Name = "RegisterUser")]
         [EndpointSummary("Registers a new user")]
+        [SwaggerResponse(201, "User registered successfully.", typeof(AuthenticationResponseDTO))]
+        [SwaggerResponse(400, "Invalid request.")]
         public async Task<ActionResult<AuthenticationResponseDTO>> Register(
             UserCredentialsDTO userCredentialsDTO)
         {
@@ -79,6 +84,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost("login", Name = "LoginUser")]
         [EndpointSummary("Login")]
+        [SwaggerResponse(200, "User logged in successfully.", typeof(AuthenticationResponseDTO))]
+        [SwaggerResponse(400, "Invalid login.")]
         public async Task<ActionResult<AuthenticationResponseDTO>> Login(
             UserCredentialsDTO userCredentialsDTO)
         {
@@ -103,8 +110,11 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpPut(Name = "UpdateUser")]
-        //[Authorize]
+        [Authorize]
         [EndpointSummary("Updates a user")]
+        [SwaggerResponse(204, "User updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(401, "Unauthorized access.")]
         public async Task<ActionResult> Put(UpdateUserDTO updateUserDTO)
         {
             var user = await userService.GetUser();
@@ -122,7 +132,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpGet("renew-token", Name = "RenewToken")]
         [Authorize]
-        [EndpointSummary("Renews the token")]
+        [EndpointSummary("Refresh the token")]
+        [SwaggerResponse(200, "Token refreshed successfully.", typeof(AuthenticationResponseDTO))]
+        [SwaggerResponse(401, "Refresh token is invalid or expired.")]
         public async Task<ActionResult<AuthenticationResponseDTO>> RenewToken()
         {
             var user = await userService.GetUser();
@@ -141,6 +153,9 @@ namespace BibliotecaAPI.Controllers
         [HttpPost("make-admin")]
         [Authorize(Policy = "isadmin")]
         [EndpointSummary("Grants admin role to a user")]
+        [SwaggerResponse(204, "Role assigned successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(403, "Access denied. Admin role required.")]
         public async Task<ActionResult> MakeAdmin(EditClaimDTO editClaimDTO)
         {
             var user = await userManager.FindByEmailAsync(editClaimDTO.Email);
@@ -157,6 +172,9 @@ namespace BibliotecaAPI.Controllers
         [HttpPost("remove-admin")]
         [Authorize(Policy = "isadmin")]
         [EndpointSummary("Removes admin role from a user")]
+        [SwaggerResponse(204, "Role removed successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(403, "Access denied. Admin role required.")]
         public async Task<ActionResult> RemoveAdmin(EditClaimDTO editClaimDTO)
         {
             var user = await userManager.FindByEmailAsync(editClaimDTO.Email);

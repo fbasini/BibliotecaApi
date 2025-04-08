@@ -9,11 +9,11 @@ namespace BibliotecaAPI.Controllers
     [Authorize]
     public class RootController : ControllerBase
     {
-        private readonly IAuthorizationService _authorizationService;
+        private readonly IAuthorizationService authorizationService;
 
         public RootController(IAuthorizationService authorizationService)
         {
-            _authorizationService = authorizationService;
+            this.authorizationService = authorizationService;
         }
 
         [HttpGet(Name = "GetRoot")]
@@ -22,9 +22,8 @@ namespace BibliotecaAPI.Controllers
         {
             var hateoasData = new List<HATEOASDataDTO>();
 
-            var isAdmin = await _authorizationService.AuthorizeAsync(User, "isadmin");
+            var isAdmin = await authorizationService.AuthorizeAsync(User, "isadmin");
 
-            // Acciones que cualquiera puede realizar
             hateoasData.Add(new HATEOASDataDTO(Link: Url.Link("GetRoot", new { })!,
                 Description: "self", Method: "GET"));
 
@@ -40,7 +39,6 @@ namespace BibliotecaAPI.Controllers
 
             if (User.Identity!.IsAuthenticated)
             {
-                // Acciones para usuarios logueados
                 hateoasData.Add(new HATEOASDataDTO(Link: Url.Link("UpdateUser", new { })!,
                     Description: "user-update", Method: "PUT"));
 
@@ -50,7 +48,6 @@ namespace BibliotecaAPI.Controllers
 
             if (isAdmin.Succeeded)
             {
-                // Acciones que solo usuarios admins pueden realizar
                 hateoasData.Add(new HATEOASDataDTO(Link: Url.Link("CreateAuthor", new { })!,
                     Description: "author-create", Method: "POST"));
 

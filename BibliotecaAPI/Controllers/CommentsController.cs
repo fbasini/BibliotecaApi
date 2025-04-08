@@ -8,6 +8,7 @@ using BibliotecaAPI.Entities;
 using BibliotecaAPI.Services;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.JsonPatch;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -34,6 +35,7 @@ namespace BibliotecaAPI.Controllers
         [HttpGet(Name = "GetComments")]
         [AllowAnonymous]
         [EndpointSummary("Retrieves comments for a book")]
+        [SwaggerResponse(200, "List of comments retrieved successfully.", typeof(List<CommentDTO>))]
         [OutputCache(Tags = [cache])]
         public async Task<ActionResult<List<CommentDTO>>> Get(int bookId)
         {
@@ -53,11 +55,13 @@ namespace BibliotecaAPI.Controllers
             return mapper.Map<List<CommentDTO>>(comments);
         }
 
-        [HttpGet("{id:int}", Name = "GetComment")]
+        [HttpGet("{id}", Name = "GetComment")] 
         [AllowAnonymous]
         [EndpointSummary("Retrieves a specific comment")]
+        [SwaggerResponse(200, "Comment details retrieved successfully.", typeof(CommentDTO))]
+        [SwaggerResponse(404, "Comment not found.")]
         [OutputCache(Tags = [cache])]
-        public async Task<ActionResult<CommentDTO>> GetById(Guid id)
+        public async Task<ActionResult<CommentDTO>> GetById(int bookId, Guid id)
         {
             var comment = await context.Comments
                                     .Include(x => x.User)
@@ -73,6 +77,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost(Name = "CreateComment")]
         [EndpointSummary("Creates a new comment for a book")]
+        [SwaggerResponse(201, "Comment created successfully.", typeof(CommentDTO))]
+        [SwaggerResponse(400, "Invalid request.")]
         public async Task<ActionResult> Post(int bookId, CreateCommentDTO createCommentDTO)
         {
             var bookExists = await context.Books.AnyAsync(x => x.Id == bookId);
@@ -103,6 +109,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPatch("{id}", Name = "PatchComment")]
         [EndpointSummary("Partially updates a comment")]
+        [SwaggerResponse(204, "Comment partially updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(404, "Comment not found.")]
         public async Task<ActionResult> Patch(Guid id, int bookId, JsonPatchDocument<CommentPatchDTO> patchDoc)
         {
             if (patchDoc is null)
@@ -158,6 +167,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPut("{id:int}", Name = "UpdateComment")]
         [EndpointSummary("Updates a comment")]
+        [SwaggerResponse(204, "Comment updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(404, "Comment not found.")]
         public async Task<ActionResult> Put(int bookId, Guid id, CreateCommentDTO createCommentDTO)
         {
             var bookExists = await context.Books.AnyAsync(x => x.Id == bookId);
@@ -185,6 +197,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpDelete("{id}", Name = "DeleteComment")]
         [EndpointSummary("Deletes a comment")]
+        [SwaggerResponse(200, "Comment deleted successfully.")]
+        [SwaggerResponse(404, "Comment not found.")]
         public async Task<ActionResult> Delete(Guid id, int bookId)
         {
             var bookExists = await context.Books.AnyAsync(x => x.Id == bookId);

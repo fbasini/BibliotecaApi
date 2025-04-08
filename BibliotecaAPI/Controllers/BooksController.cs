@@ -7,6 +7,7 @@ using BibliotecaAPI.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using BibliotecaAPI.Utilities;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -31,6 +32,7 @@ namespace BibliotecaAPI.Controllers
         [HttpGet(Name = "GetBooks")]
         [AllowAnonymous]
         [EndpointSummary("Retrieves a list of all books")]
+        [SwaggerResponse(200, "List of books retrieved successfully.", typeof(IEnumerable<BookDTO>))]
         [OutputCache(Tags = [cache])]
         public async Task<IEnumerable<BookDTO>> Get([FromQuery] PaginationDTO paginationDTO)
         {
@@ -46,6 +48,8 @@ namespace BibliotecaAPI.Controllers
         [HttpGet("{id:int}", Name = "GetBook")]
         [AllowAnonymous]
         [EndpointSummary("Retrieves a book by Id")]
+        [SwaggerResponse(200, "Book details retrieved successfully.", typeof(BookWithAuthorsDTO))]
+        [SwaggerResponse(404, "Book not found.")]
         [OutputCache(Tags = [cache])]
         public async Task<ActionResult<BookWithAuthorsDTO>> Get(int id)
         {
@@ -66,6 +70,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost(Name = "CreateBook")]
         [EndpointSummary("Creates a book")]
+        [SwaggerResponse(201, "Book created successfully.", typeof(BookDTO))]
+        [SwaggerResponse(400, "Invalid request.")]
         [ServiceFilter<BookValidationFilter>()]
         public async Task<ActionResult> Post(CreateBookDTO createBookDTO)
         {
@@ -94,6 +100,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPut("{id:int}", Name = "UpdateBook")]
         [EndpointSummary("Updates a book")]
+        [SwaggerResponse(204, "Book updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(404, "Book not found.")]
         [ServiceFilter<BookValidationFilter>]
         public async Task<ActionResult> Put(int id, CreateBookDTO createBookDTO)
         {
@@ -149,6 +158,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpDelete("{id:int}", Name = "DeleteBook")]
         [EndpointSummary("Deletes a book")]
+        [SwaggerResponse(200, "Book deleted successfully.")]
+        //[SwaggerResponse(204, "Book deleted successfully.")]
+        [SwaggerResponse(404, "Book not found.")]
         public async Task<ActionResult> Delete(int id)
         {
             var deletedRecords = await context.Books.Where(x => x.Id == id).ExecuteDeleteAsync();

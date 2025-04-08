@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using System.ComponentModel;
 using Microsoft.AspNetCore.JsonPatch;
 using System.Linq.Dynamic.Core;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -44,6 +45,7 @@ namespace BibliotecaAPI.Controllers
         [HttpGet(Name = "GetAuthors")] // api/authors
         [AllowAnonymous]
         [EndpointSummary("Retrieves a list of all authors")]
+        [SwaggerResponse(200, "List of authors retrieved successfully.", typeof(IEnumerable<AuthorDTO>))]
         [OutputCache(Tags = [cache])]
         [ServiceFilter<HATEOASAuthorsAttribute>]
         public async Task<IEnumerable<AuthorDTO>> Get([FromQuery] PaginationDTO paginationDTO)
@@ -54,11 +56,13 @@ namespace BibliotecaAPI.Controllers
         [HttpGet("{id:int}", Name = "GetAuthor")] // api/authors/id
         [AllowAnonymous]
         [EndpointSummary("Retrieves an author by ID")]
+        [SwaggerResponse(200, "Author details retrieved successfully.", typeof(AuthorWithBooksDTO))]
+        [SwaggerResponse(404, "Author not found.")]
         [ProducesResponseType<AuthorWithBooksDTO>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [OutputCache(Tags = [cache])]
         [ServiceFilter<HATEOASAuthorAttribute>()]
-        public async Task<ActionResult<AuthorWithBooksDTO>> Get([Description("The author's Id")] int id)
+        public async Task<ActionResult<AuthorWithBooksDTO>> Get(int id)
         {
             var author = await context.Authors
                 .Include(x => x.Books)
@@ -78,6 +82,8 @@ namespace BibliotecaAPI.Controllers
         [HttpGet("filter", Name = "FilterAuthors")]
         [AllowAnonymous]
         [EndpointSummary("Filter authors")]
+        [SwaggerResponse(200, "Filtered list of authors retrieved successfully.", typeof(IEnumerable<AuthorDTO>))]
+        [SwaggerResponse(400, "Invalid request.")]
         public async Task<ActionResult> Filter([FromQuery] AuthorFilterDTO authorFilterDTO)
         {
             var queryable = context.Authors.AsQueryable();
@@ -164,6 +170,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost(Name = "CreateAuthor")]
         [EndpointSummary("Creates an author")]
+        [SwaggerResponse(201, "Author created successfully.", typeof(AuthorDTO))]
+        [SwaggerResponse(400, "Invalid request.")]
         public async Task<ActionResult> Post([FromBody] CreateAuthorDTO createAuthorDTO)
         {
             var author = mapper.Map<Author>(createAuthorDTO);
@@ -176,6 +184,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPost("with-photo", Name = "CreateAuthorWithPhoto")]
         [EndpointSummary("Creates an author with a photo")]
+        [SwaggerResponse(201, "Author with photo created successfully.", typeof(AuthorDTO))]
+        [SwaggerResponse(400, "Invalid request.")]
         public async Task<ActionResult> PostWithPhoto([FromForm]
             CreateAuthorWithPhotoDTO createAuthorDTO)
         {
@@ -198,6 +208,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPut("{id:int}", Name = "UpdateAuthor")] // api/authors/id
         [EndpointSummary("Updates an author")]
+        [SwaggerResponse(204, "Author updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(404, "Author not found.")]
         public async Task<ActionResult> Put([FromForm] CreateAuthorWithPhotoDTO createAuthorDTO, int id)
         {
             var exists = await context.Authors.AnyAsync(x => x.Id == id);
@@ -230,6 +243,9 @@ namespace BibliotecaAPI.Controllers
 
         [HttpPatch("{id:int}", Name = "PatchAutor")]
         [EndpointSummary("Partially updates an author")]
+        [SwaggerResponse(204, "Author partially updated successfully.")]
+        [SwaggerResponse(400, "Invalid request.")]
+        [SwaggerResponse(404, "Author not found.")]
         public async Task<ActionResult> Patch(int id, JsonPatchDocument<AuthorPatchDTO> patchDoc)
         {
             if (patchDoc is null)
@@ -265,6 +281,8 @@ namespace BibliotecaAPI.Controllers
 
         [HttpDelete("{id:int}", Name = "DeleteAuthor")]
         [EndpointSummary("Deletes an author")]
+        [SwaggerResponse(204, "Author deleted successfully.")]
+        [SwaggerResponse(404, "Author not found.")]
         public async Task<ActionResult> Delete(int id)
         {
             var author = await context.Authors.FirstOrDefaultAsync(x => x.Id == id);

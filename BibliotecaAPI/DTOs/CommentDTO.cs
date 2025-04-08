@@ -4,7 +4,7 @@
     {
         public Guid Id { get; set; }
         public required string Body { get; set; }
-        public DateTime PublishedDate { get; set; }
+        public DateTime PostedAt { get; set; }
         public required string UserId { get; set; }
         public required string UserEmail { get; set; }
     }
