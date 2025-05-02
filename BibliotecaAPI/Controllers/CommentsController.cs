@@ -165,7 +165,7 @@ namespace BibliotecaAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id:int}", Name = "UpdateComment")]
+        [HttpPut("{id}", Name = "UpdateComment")]
         [EndpointSummary("Updates a comment")]
         [SwaggerResponse(204, "Comment updated successfully.")]
         [SwaggerResponse(400, "Invalid request.")]
