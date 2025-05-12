@@ -12,7 +12,7 @@ namespace BibliotecaAPI.Utilities
             }
 
             double totalCount = await queryable.CountAsync();
-            httpContext.Response.Headers.Append("total-record-count", totalCount.ToString());
+            httpContext.Response.Headers.Append("total-records-count", totalCount.ToString());
         }
     }
 }
