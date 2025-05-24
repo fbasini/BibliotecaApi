@@ -126,6 +126,29 @@ namespace BibliotecaAPI.Controllers
 
             user.BirthDate = updateUserDTO.BirthDate;
 
+            if (!string.IsNullOrEmpty(updateUserDTO.NewPassword))
+            {
+                if (string.IsNullOrEmpty(updateUserDTO.CurrentPassword))
+                {
+                    ModelState.AddModelError(nameof(updateUserDTO.CurrentPassword), "Current password is required to change the password");
+                    return ValidationProblem();
+                }
+
+                var result = await userManager.ChangePasswordAsync(
+                    user,
+                    updateUserDTO.CurrentPassword,
+                    updateUserDTO.NewPassword);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return ValidationProblem();
+                }
+            }
+
             await userManager.UpdateAsync(user);
             return NoContent();
         }
