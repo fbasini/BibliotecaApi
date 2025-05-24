@@ -51,6 +51,24 @@ namespace BibliotecaAPI.Controllers
             return usersDTO;
         }
 
+        [HttpGet("me", Name = "GetUserMe")]
+        [Authorize]
+        [EndpointSummary("Get current user information")]
+        [SwaggerResponse(200, "User data retrieved successfully", typeof(UserDTO))]
+        [SwaggerResponse(401, "Unauthorized access")]
+        [SwaggerResponse(404, "User not found")]
+        public async Task<ActionResult<UserDTO>> GetMe()
+        {
+            var user = await userService.GetUser();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<UserDTO>(user);
+        }
+
         [HttpPost("register", Name = "RegisterUser")]
         [EndpointSummary("Registers a new user")]
         [SwaggerResponse(201, "User registered successfully.", typeof(AuthenticationResponseDTO))]
