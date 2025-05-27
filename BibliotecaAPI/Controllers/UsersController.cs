@@ -3,9 +3,11 @@ using BibliotecaAPI.Data;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entities;
 using BibliotecaAPI.Services;
+using BibliotecaAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
@@ -26,10 +28,12 @@ namespace BibliotecaAPI.Controllers
         private readonly IConfiguration configuration;
         private readonly SignInManager<User> signInManager;
         private readonly IUserService userService;
+        private readonly IOutputCacheStore outputCacheStore;
+        private const string cache = "users-get";
 
         public UsersController(ApplicationDbContext applicationDbContext, IMapper mapper,
             UserManager<User> userManager, IConfiguration configuration, SignInManager<User> signInManager,
-            IUserService userService)
+            IUserService userService, IOutputCacheStore outputCacheStore)
         {
             context = applicationDbContext;
             this.mapper = mapper;
@@ -37,6 +41,7 @@ namespace BibliotecaAPI.Controllers
             this.configuration = configuration;
             this.signInManager = signInManager;
             this.userService = userService;
+            this.outputCacheStore = outputCacheStore;
         }
 
         [HttpGet(Name = "GetUsers")]
@@ -44,10 +49,33 @@ namespace BibliotecaAPI.Controllers
         [EndpointSummary("Retrieves all users")]
         [SwaggerResponse(200, "List of users retrieved successfully.", typeof(IEnumerable<UserDTO>))]
         [SwaggerResponse(403, "Access denied. Admin role required.")]
-        public async Task<IEnumerable<UserDTO>> Get()
+        [OutputCache(Tags = [cache])]
+        public async Task<IEnumerable<UserDTO>> Get([FromQuery] PaginationDTO paginationDTO)
         {
-            var users = await context.Users.ToListAsync();
-            var usersDTO = mapper.Map<IEnumerable<UserDTO>>(users);
+            var queryable = context.Users.AsQueryable();
+            
+            await HttpContext.InsertPaginationParamsInHeader(queryable);
+            
+            var users = await queryable
+                .OrderBy(u => u.Email)
+                .Paginate(paginationDTO)
+                .ToListAsync();
+            
+            var usersDTO = new List<UserDTO>();
+            
+            foreach (var user in users)
+            {
+                var isAdmin = (await userManager.GetClaimsAsync(user))
+                    .Any(c => c.Type == "isadmin" && c.Value == "true");
+
+                usersDTO.Add(new UserDTO
+                {
+                    Email = user.Email!,
+                    BirthDate = user.BirthDate,
+                    IsAdmin = isAdmin
+                });
+            }
+
             return usersDTO;
         }
 

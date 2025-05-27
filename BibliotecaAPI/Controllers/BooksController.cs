@@ -37,11 +37,15 @@ namespace BibliotecaAPI.Controllers
         public async Task<IEnumerable<BookDTO>> Get([FromQuery] PaginationDTO paginationDTO)
         {
             var queryable = context.Books.AsQueryable();
+            
             await HttpContext.InsertPaginationParamsInHeader(queryable);
+            
             var books = await queryable
                         .OrderBy(x => x.Title)
                         .Paginate(paginationDTO).ToListAsync();
+            
             var booksDTO = mapper.Map<IEnumerable<BookDTO>>(books);
+            
             return booksDTO;
         }
 

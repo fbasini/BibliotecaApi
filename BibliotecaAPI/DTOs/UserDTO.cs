@@ -4,5 +4,6 @@
     {
         public required string Email { get; set; }
         public DateTime BirthDate { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }
