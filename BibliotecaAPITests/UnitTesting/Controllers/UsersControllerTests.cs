@@ -6,6 +6,7 @@ using BibliotecaAPITests.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using System;
@@ -52,8 +53,10 @@ namespace BibliotecaAPITests.UnitTesting.Controllers
 
             var mapper = AutoMapperConfiguration();
 
+            IOutputCacheStore outputCacheStore = null!;
+
             controller = new UsersController(context, mapper, userManager, configuration,
-                signInManager, userService);
+                signInManager, userService, outputCacheStore);
         }
 
         [TestMethod]
