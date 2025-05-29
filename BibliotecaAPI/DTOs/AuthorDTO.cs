@@ -5,5 +5,6 @@
         public int Id { get; set; }
         public required string FullName { get; set; }
         public string? Photo { get; set; }
+        public string? Identification { get; set; }
     }
 }

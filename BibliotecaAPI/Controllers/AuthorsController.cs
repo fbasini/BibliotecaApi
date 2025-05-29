@@ -98,6 +98,12 @@ namespace BibliotecaAPI.Controllers
                 queryable = queryable.Where(x => x.LastName.Contains(authorFilterDTO.LastNames));
             }
 
+            if (!string.IsNullOrEmpty(authorFilterDTO.Identification))
+            {
+                queryable = queryable.Where(x => x.Identification != null &&
+                                                x.Identification.Contains(authorFilterDTO.Identification));
+            }
+
             if (authorFilterDTO.IncludeBooks)
             {
                 queryable = queryable.Include(x => x.Books).ThenInclude(x => x.Book);
@@ -165,6 +171,8 @@ namespace BibliotecaAPI.Controllers
                 var authorsDTO = mapper.Map<IEnumerable<AuthorDTO>>(authors);
                 return Ok(authorsDTO);
             }
+
+         
 
         }
 

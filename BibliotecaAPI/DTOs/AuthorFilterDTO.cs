@@ -19,5 +19,6 @@
         public bool IncludeBooks { get; set; }
         public string? SortField { get; set; }
         public bool IsAscending { get; set; } = true;
+        public string? Identification { get; set; }
     }
 }

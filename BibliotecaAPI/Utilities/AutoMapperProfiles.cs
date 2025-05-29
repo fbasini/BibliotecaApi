@@ -9,7 +9,8 @@ namespace BibliotecaAPI.Utilities
         public AutoMapperProfiles()
         {
             CreateMap<Author, AuthorDTO>()
-                .ForMember(dto => dto.FullName, config => config.MapFrom(author => MapAuthorName(author)));
+                .ForMember(dto => dto.FullName, config => config.MapFrom(author => MapAuthorName(author)))
+                .ForMember(dto => dto.Identification, config => config.MapFrom(ent => ent.Identification));
 
             CreateMap<Author, AuthorWithBooksDTO>()
                 .ForMember(dto => dto.FullName, config => config.MapFrom(author => MapAuthorName(author)));
