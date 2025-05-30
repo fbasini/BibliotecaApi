@@ -76,9 +76,7 @@ namespace BibliotecaAPI.Controllers
         [SwaggerResponse(400, "Invalid request")]
         [SwaggerResponse(401, "Unauthorized access")]
         [SwaggerResponse(404, "Book not found")]
-        public async Task<ActionResult> Post(
-    [FromQuery] int bookId,
-    [FromBody] CreateRatingDTO createRatingDTO)
+        public async Task<ActionResult> Post([FromQuery] int bookId, [FromBody] CreateRatingDTO createRatingDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -122,26 +120,31 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpPut(Name = "UpdateRating")]
+        [Authorize]
         [EndpointSummary("Updates an existing rating")]
         [SwaggerResponse(204, "Rating updated successfully")]
         [SwaggerResponse(404, "Rating not found")]
         [SwaggerResponse(401, "Unauthorized access")]
-        public async Task<ActionResult> Put([FromQuery] int bookId, CreateRatingDTO updateRatingDTO)
+        public async Task<ActionResult> Put([FromQuery] int bookId, [FromBody] CreateRatingDTO updateRatingDTO)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userService.GetUser();
+            if (user is null)
+                return Unauthorized();
 
             var existingRating = await _context.Ratings
-                .FirstOrDefaultAsync(x => x.BookId == bookId && x.UserId == userId);
+                .FirstOrDefaultAsync(r => r.BookId == bookId && r.UserId == user.Id);
 
-            if (existingRating == null)
-            {
-                return NotFound("Rating not found.");
-            }
+            if (existingRating is null)
+                return NotFound("Rating not found. First create a rating using POST.");
 
             existingRating.Score = updateRatingDTO.Score;
             await _context.SaveChangesAsync();
 
             await UpdateBookRatingStats(bookId);
+            await _cache.EvictByTagAsync("ratings", default);
             await _cache.EvictByTagAsync("books-get", default);
 
             return NoContent();
