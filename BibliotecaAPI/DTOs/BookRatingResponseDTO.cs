@@ -2,7 +2,7 @@
 {
     public class BookRatingResponseDTO
     {
-        public double AverageRating { get; set; }
+        public decimal AverageRating { get; set; }
         public int TotalRatings { get; set; }
         public int? UserRating { get; set; }
     }

@@ -11,7 +11,7 @@ namespace BibliotecaAPI.Entities
         public required string Title { get; set; }
         public List<AuthorBook> Authors { get; set; } = [];
         public List<Comment> Comments { get; set; } = [];
-        public double AverageRating { get; set; } = 0.0;
+        public decimal AverageRating { get; set; } = 0;
         public int TotalRatings { get; set; } = 0;
         public List<Rating> Ratings { get; set; } = [];
     }

@@ -4,7 +4,7 @@ namespace BibliotecaAPI.DTOs
 {
     public class CreateRatingDTO
     {
-        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
-        public int Score { get; set; }
+        [Range(0.5, 5, ErrorMessage = "Rating must be between 0.5 and 5")]
+        public decimal Score { get; set; }
     }
 }

@@ -7,7 +7,7 @@
         public Book Book { get; set; } = null!;
         public string UserId { get; set; } = null!;  
         public User User { get; set; } = null!;
-        public int Score { get; set; } 
+        public decimal Score { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
