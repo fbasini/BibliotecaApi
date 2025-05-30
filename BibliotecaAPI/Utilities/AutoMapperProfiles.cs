@@ -25,7 +25,9 @@ namespace BibliotecaAPI.Utilities
                 .ForMember(dto => dto.Title, config => config.MapFrom(ent => ent.Book!.Title));
 
 
-            CreateMap<Book, BookDTO>();
+            CreateMap<Book, BookDTO>()
+                .ForMember(dto => dto.AverageRating, config => config.MapFrom(ent => ent.AverageRating))
+                .ForMember(dto => dto.TotalRatings, config => config.MapFrom(ent => ent.TotalRatings));
             CreateMap<CreateBookDTO, Book>()
                 .ForMember(ent => ent.Authors, config =>
                     config.MapFrom(dto => dto.AuthorsIds.Select(id => new AuthorBook { AuthorId = id })));

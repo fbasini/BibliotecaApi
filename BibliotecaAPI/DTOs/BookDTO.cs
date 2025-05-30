@@ -8,5 +8,7 @@ namespace BibliotecaAPI.DTOs
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public double AverageRating { get; set; }  
+        public int TotalRatings { get; set; }
     }
 }

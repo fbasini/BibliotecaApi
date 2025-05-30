@@ -15,6 +15,16 @@ namespace BibliotecaAPI.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Comment>().HasQueryFilter(b => !b.IsDeleted);
+
+            modelBuilder.Entity<Rating>()
+            .HasOne(r => r.Book)
+            .WithMany(b => b.Ratings)
+            .HasForeignKey(r => r.BookId);
+
+            modelBuilder.Entity<Rating>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId);
         }
 
         public DbSet<Author> Authors { get; set; }
@@ -22,5 +32,6 @@ namespace BibliotecaAPI.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<AuthorBook> AuthorsBooks { get; set; }
         public DbSet<Error> Errors { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
     }
 }
