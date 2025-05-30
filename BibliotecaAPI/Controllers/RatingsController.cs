@@ -2,7 +2,9 @@
 using BibliotecaAPI.Data;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entities;
+using BibliotecaAPI.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +21,14 @@ namespace BibliotecaAPI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IOutputCacheStore _cache;
+        private readonly IUserService _userService;
 
-        public RatingsController(ApplicationDbContext context, IMapper mapper, IOutputCacheStore cache)
+        public RatingsController(ApplicationDbContext context, IMapper mapper, IOutputCacheStore cache, IUserService userService)
         {
             _context = context;
             _mapper = mapper;
             _cache = cache;
+            _userService = userService;
         }
 
         [HttpGet("{bookId:int}", Name = "GetBookRating")]
@@ -66,34 +70,38 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpPost(Name = "CreateRating")]
+        [Authorize]
         [EndpointSummary("Creates a new rating for a book")]
         [SwaggerResponse(204, "Rating created successfully")]
-        [SwaggerResponse(400, "Invalid request or user already rated this book")]
+        [SwaggerResponse(400, "Invalid request")]
         [SwaggerResponse(401, "Unauthorized access")]
-        public async Task<ActionResult> Post([FromQuery] int bookId, CreateRatingDTO createRatingDTO)
+        [SwaggerResponse(404, "Book not found")]
+        public async Task<ActionResult> Post(
+    [FromQuery] int bookId,
+    [FromBody] CreateRatingDTO createRatingDTO)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var existingRating = await _context.Ratings
-                .FirstOrDefaultAsync(x => x.BookId == bookId && x.UserId == userId);
+            var user = await _userService.GetUser();
+            if (user is null)
+                return Unauthorized();
 
-            if (existingRating != null)
-            {
-                return BadRequest("You have already rated this book.");
-            }
+            if (!await _context.Books.AnyAsync(x => x.Id == bookId))
+                return NotFound("Book not found");
 
             var rating = new Rating
             {
                 BookId = bookId,
-                UserId = userId!,
-                Score = createRatingDTO.Score
+                UserId = user.Id, 
+                Score = createRatingDTO.Score,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
             await UpdateBookRatingStats(bookId);
-
             await _cache.EvictByTagAsync("books-get", default);
 
             return NoContent();
