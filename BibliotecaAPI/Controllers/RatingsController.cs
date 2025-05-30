@@ -113,8 +113,12 @@ namespace BibliotecaAPI.Controllers
 
             if (book != null)
             {
-                book.AverageRating = book.Ratings.Average(x => x.Score);
                 book.TotalRatings = book.Ratings.Count;
+
+                book.AverageRating = book.TotalRatings > 0
+                    ? book.Ratings.Average(x => x.Score)
+                    : 0; 
+
                 await _context.SaveChangesAsync();
             }
         }
@@ -144,6 +148,37 @@ namespace BibliotecaAPI.Controllers
             await _context.SaveChangesAsync();
 
             await UpdateBookRatingStats(bookId);
+            await _cache.EvictByTagAsync("ratings", default);
+            await _cache.EvictByTagAsync("books-get", default);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{bookId:int}", Name = "DeleteRating")]
+        [Authorize]
+        [EndpointSummary("Deletes a rating for a book")]
+        [SwaggerResponse(204, "Rating deleted successfully")]
+        [SwaggerResponse(404, "Rating not found")]
+        [SwaggerResponse(401, "Unauthorized access")]
+        public async Task<ActionResult> Delete(int bookId)
+        {
+            var user = await _userService.GetUser();
+            if (user is null)
+                return Unauthorized();
+
+            var rating = await _context.Ratings
+                .FirstOrDefaultAsync(x => x.BookId == bookId && x.UserId == user.Id);
+
+            if (rating is null)
+                return NotFound("Rating not found.");
+
+            _context.Ratings.Remove(rating);
+            await _context.SaveChangesAsync();
+
+            await UpdateBookRatingStats(bookId);
+
+            await _cache.EvictByTagAsync($"ratings-{bookId}", default);
+            await _cache.EvictByTagAsync($"user-ratings-{user.Id}-{bookId}", default);
             await _cache.EvictByTagAsync("ratings", default);
             await _cache.EvictByTagAsync("books-get", default);
 
