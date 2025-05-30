@@ -32,7 +32,7 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet("{bookId:int}", Name = "GetBookRating")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [EndpointSummary("Retrieves rating information for a book")]
         [SwaggerResponse(200, "Rating data retrieved successfully", typeof(BookRatingResponseDTO))]
         [SwaggerResponse(404, "Book not found")]
@@ -40,30 +40,30 @@ namespace BibliotecaAPI.Controllers
         public async Task<ActionResult<BookRatingResponseDTO>> Get(int bookId)
         {
             var book = await _context.Books
-                .Include(x => x.Ratings)
-                .FirstOrDefaultAsync(x => x.Id == bookId);
+        .Include(x => x.Ratings)
+        .FirstOrDefaultAsync(x => x.Id == bookId);
 
-            if (book == null)
-            {
-                return NotFound();
-            }
+            if (book == null) return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int? userRating = null;
 
-            if (userId != null)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                userRating = await _context.Ratings
-                    .Where(x => x.BookId == bookId && x.UserId == userId)
-                    .Select(x => x.Score)
-                    .FirstOrDefaultAsync();
+                var user = await _userService.GetUser();
+                if (user != null)
+                {
+                    userRating = await _context.Ratings
+                        .Where(x => x.BookId == bookId && x.UserId == user.Id)
+                        .Select(x => (int?)x.Score)
+                        .FirstOrDefaultAsync();
+                }
             }
 
             var responseDTO = new BookRatingResponseDTO
             {
                 AverageRating = book.AverageRating,
                 TotalRatings = book.TotalRatings,
-                UserRating = userRating
+                UserRating = userRating 
             };
 
             return responseDTO;
