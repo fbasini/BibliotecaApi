@@ -32,7 +32,7 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet("{bookId:int}", Name = "GetBookRating")]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         [EndpointSummary("Retrieves rating information for a book")]
         [SwaggerResponse(200, "Rating data retrieved successfully", typeof(BookRatingResponseDTO))]
         [SwaggerResponse(404, "Book not found")]
